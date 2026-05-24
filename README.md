@@ -6,7 +6,7 @@ Designed with **Dual-Mode Execution** (Zero-latency Local Heuristics + Deep Live
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 * **Task A: Behavioral Digital Twin Simulation**
   * Decouples numerical rating calculations from text generation to achieve highly competitive **RMSE scores** ($0.0438$ over a 50,000 dataset) and eliminate LLM rating drift.
@@ -34,7 +34,7 @@ Designed with **Dual-Mode Execution** (Zero-latency Local Heuristics + Deep Live
 
 ---
 
-## 📦 Getting Started & Local Running
+##  Getting Started & Local Running
 
 You can build, test, and deploy TasteTwin AI in a single, simple Docker command.
 
@@ -67,7 +67,7 @@ You will be greeted by the TasteTwin AI dashboard. By default, it runs in **Heur
 
 ---
 
-## 🧪 REST API Playground & curl Testing
+##  REST API Playground & curl Testing
 
 You can easily interact with the REST API using simple `curl` commands.
 
@@ -141,7 +141,7 @@ curl -X POST "http://localhost:8090/api/recommend" \
 
 ---
 
-## 🎨 Creative Adjustments & local Nigerian Tuning
+##  Creative Adjustments & local Nigerian Tuning
 
 * **NEPA Grid Bypass Optimization**: The engine recognizes that local users face persistent electricity cuts. Therefore, portable solar inverters and battery power banks receive a large cultural utility boost.
 * **Lagos Logistics Integration**: Shipping delay complaints are naturally contextualized around Third Mainland Bridge traffic, Apapa port congestion, and dispatch rider challenges.
