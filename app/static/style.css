@@ -1532,3 +1532,41 @@ select option {
     }
 }
 
+/* -----------------------------------------------------
+   DRIVER.JS ONBOARDING THEME OVERRIDES
+------------------------------------------------------ */
+.driver-popover {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-strong) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.driver-popover-title {
+    font-weight: 600 !important;
+    font-family: 'Outfit', sans-serif !important;
+    color: var(--text-primary) !important;
+    font-size: 1.1rem !important;
+}
+.driver-popover-description {
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+}
+.driver-popover-footer button {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: var(--radius-sm) !important;
+    text-shadow: none !important;
+    padding: 5px 10px !important;
+}
+.driver-popover-footer button:hover {
+    background: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+}
+.driver-popover-progress-text {
+    color: var(--text-secondary) !important;
+}
+

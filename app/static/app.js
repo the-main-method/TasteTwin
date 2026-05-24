@@ -54,6 +54,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Load Task B recommendations baseline
         triggerRecommendationRetrieval();
         
+        // Start Driver.js onboarding tour if not completed
+        if (!localStorage.getItem('tasteTwinTourDone')) {
+            setTimeout(() => {
+                const driver = window.driver.js.driver;
+                const tourObj = driver({
+                    showProgress: true,
+                    steps: [
+                        { element: '#engine-provider', popover: { title: 'Welcome to TasteTwin!', description: 'Start by selecting an execution mode. You can use the blazing-fast Local Heuristics, or select an LLM like Groq Llama 3.', side: "bottom", align: 'start' } },
+                        { element: '#api-key-input', popover: { title: 'Need an API Key?', description: 'If you select an LLM, you will need an API key. You can get a free, ultra-fast Groq API key by clicking <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent-primary);text-decoration:underline;font-weight:bold;">console.groq.com</a>.', side: "bottom", align: 'start' } },
+                        { element: '.sidebar-nav', popover: { title: 'Explore the Dashboard', description: 'Navigate through the tabs to test User Profiling, run Multi-Agent Debates, and explore the internal algorithms.', side: "right", align: 'start' } }
+                    ],
+                    onDestroyStarted: () => {
+                        localStorage.setItem('tasteTwinTourDone', 'true');
+                        tourObj.destroy();
+                    }
+                });
+                tourObj.drive();
+            }, 800); // slight delay so the UI fully renders
+        }
+        
     } catch (err) {
         console.error("Initialization failed: ", err);
     }
