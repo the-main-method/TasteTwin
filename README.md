@@ -1,3 +1,12 @@
+---
+title: TasteTwin
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8090
+---
+
 # TasteTwin AI — Behavioral Digital Twin & Multi-Agent Recommendation Engine
 
 TasteTwin AI is a state-of-the-art computational psychology and multi-agent debate framework designed for both **Task A (User Modeling & Review Simulation)** and **Task B (Explainable Cross-Domain Recommendations)** of the DSN x BCT LLM Agent Challenge.
