@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  tastetwin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tastetwin-ai:latest
+    container_name: tastetwin_service
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

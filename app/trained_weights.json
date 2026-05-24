@@ -1,0 +1,8 @@
+{
+  "user_mean": 0.99,
+  "item_bias": 1.2,
+  "cat_bias": 0.7,
+  "price_adj": 0.31,
+  "complaint_pen": 0.05,
+  "debate_alpha": 0.95
+}

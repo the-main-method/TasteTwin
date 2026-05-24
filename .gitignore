@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+scratch/
+app/scratch/
+*.pdf
+*.txt
+!requirements.txt
+eval_50k.py
+verify_engine.py
+extract_pdf.py
