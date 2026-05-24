@@ -14,14 +14,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file to leverage Docker cache
-COPY requirements.txt .
+# Set up a new user named "user" with user ID 1000
+RUN useradd -m -u 1000 user
 
-# Install Python package dependencies
+# Switch to the "user" user
+USER user
+
+# Set home to the user's home directory
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+
+# Set the working directory to the user's home directory
+WORKDIR $HOME/app
+
+# Copy the requirements file and install dependencies
+COPY --chown=user requirements.txt $HOME/app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
-COPY . .
+COPY --chown=user . $HOME/app/
 
 # Expose the API port
 EXPOSE 7860
