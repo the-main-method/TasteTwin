@@ -4,7 +4,7 @@ emoji: 🧠
 colorFrom: blue
 colorTo: indigo
 sdk: docker
-app_port: 8090
+app_port: 7860
 ---
 
 # TasteTwin AI — Behavioral Digital Twin & Multi-Agent Recommendation Engine
