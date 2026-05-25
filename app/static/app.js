@@ -10,7 +10,7 @@ let currentRecommendations = [];
 let activeDebateItem = null;
 
 // API Provider Configurations
-let currentProvider = localStorage.getItem("tastetwin_provider") || "heuristic";
+let currentProvider = localStorage.getItem("tastetwin_provider") || "groq";
 let currentApiKey = localStorage.getItem("tastetwin_apikey") || "";
 
 // ----------------------------------------------------------------------
@@ -63,7 +63,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     steps: [
                         { element: '#engine-provider', popover: { title: 'Welcome to TasteTwin!', description: 'Start by selecting an execution mode. You can use the blazing-fast Local Heuristics, or select an LLM like Groq Llama 3.', side: "bottom", align: 'start' } },
                         { element: '#api-key-input', popover: { title: 'Need an API Key?', description: 'If you select an LLM, you will need an API key. You can get a free, ultra-fast Groq API key by clicking <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent-primary);text-decoration:underline;font-weight:bold;">console.groq.com</a>.', side: "bottom", align: 'start' } },
-                        { element: '.sidebar-nav', popover: { title: 'Explore the Dashboard', description: 'Navigate through the tabs to test User Profiling, run Multi-Agent Debates, and explore the internal algorithms.', side: "right", align: 'start' } }
+                        { element: 'button[data-tab="tab-sandbox"]', popover: { title: 'User Sandbox', description: 'This is where you explore the Digital Twin memory. Select different users to load their historical data, preferences, and generated Taste DNA.', side: "right", align: 'start' } },
+                        { element: 'button[data-tab="tab-taste-map"]', popover: { title: 'Taste Map', description: 'Visually explore how the algorithm clusters users and items in a mathematical vector space based on behavioral similarity.', side: "right", align: 'start' } },
+                        { element: 'button[data-tab="tab-chatbot"]', popover: { title: 'Twin Chatbot', description: 'Chat directly with the simulated Digital Twin! It embodies the persona, constraints, and memories of the selected user.', side: "right", align: 'start' } },
+                        { element: 'button[data-tab="tab-taska"]', popover: { title: 'Task A: Review Gen', description: 'Generate realistic, culturally-contextualized product reviews based exactly on the user\'s internal Taste DNA and mood.', side: "right", align: 'start' } },
+                        { element: 'button[data-tab="tab-taskb"]', popover: { title: 'Task B: Recommendations', description: 'Watch specialized AI agents debate and recommend the perfect item based on Taste, Budget, Novelty, and Nigerian Context.', side: "right", align: 'start' } },
+                        { element: 'button[data-tab="tab-evaluation"]', popover: { title: 'Mathematical Evaluation', description: 'View the raw performance metrics of our custom Coordinate Descent ranking engine.', side: "right", align: 'start' } }
                     ],
                     onDestroyStarted: () => {
                         localStorage.setItem('tasteTwinTourDone', 'true');
