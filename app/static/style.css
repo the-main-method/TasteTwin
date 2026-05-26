@@ -1570,3 +1570,7 @@ select option {
     color: var(--text-secondary) !important;
 }
 
+
+/* Custom textarea styling */
+.custom-creator-box textarea { width: 100%; padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.9rem; resize: vertical; box-sizing: border-box; }
+.custom-creator-box textarea:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }

@@ -1916,6 +1916,8 @@ class TasteTwinEngine:
         in both LLM and Heuristic modes.
         """
         persona = custom_persona if custom_persona else get_persona_by_id(persona_id)
+        if isinstance(persona, dict) and "id" not in persona:
+            persona["id"] = persona_id
         item = custom_item if custom_item else get_item_by_id(item_id)
         
         # 1. Base numerical rating from optimized machine learning predictor
@@ -2048,6 +2050,8 @@ class TasteTwinEngine:
         Unifies Task A and Task B by ranking candidates directly by the predicted satisfaction rating of their simulated future reviews.
         """
         persona = custom_persona if custom_persona else get_persona_by_id(persona_id)
+        if isinstance(persona, dict) and "id" not in persona:
+            persona["id"] = persona_id
         
         # --- STAGE 1: HYBRID CANDIDATE RETRIEVAL ---
         # Retrieve and grade all catalog items using the hybrid embedding score
