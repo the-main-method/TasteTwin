@@ -8,6 +8,7 @@ let selectedItem = null;
 let activeTab = "tab-sandbox";
 let currentRecommendations = [];
 let activeDebateItem = null;
+let activeRecTab = "debate";
 
 // API Provider Configurations
 let currentProvider = localStorage.getItem("tastetwin_provider") || "groq";
@@ -682,8 +683,8 @@ function selectDebateItem(itemId) {
             tabsEl.style.display = "flex";
         }
         
-        // Reset details panel display to 'debate'
-        switchRecTab("debate");
+        // Restore active details panel display
+        switchRecTab(activeRecTab);
         
         // Populate simulated review details
         const starsEl = document.getElementById("rec-rating-stars");
@@ -1649,6 +1650,7 @@ async function streamAmazonDataset() {
 // 14. NEW FEATURES CORE HANDLERS (COLD START & ARENA TABS)
 // ----------------------------------------------------------------------
 function switchRecTab(tabName) {
+    activeRecTab = tabName;
     // 1. Toggle active class on tab buttons
     const btns = document.querySelectorAll(".rec-tab-btn");
     btns.forEach(btn => {

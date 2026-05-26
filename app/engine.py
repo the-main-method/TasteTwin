@@ -1513,10 +1513,21 @@ def run_heuristic_debate(persona, items_list):
         raw_judge_arg = extract_aspect_argument(persona, item, "judge", judge_query, evidence["taste_memory"] + evidence["mood_memory"])
         judge_modulated = modulate_pidgin(raw_judge_arg, persona["dna"]["naija_scale"])
         
+        # Compile a rich, logical synthesis of all agents' debate points:
+        taste_verdict = f"Taste (Focus: {round(taste_score/20.0, 1)}★) highly favors the product features" if taste_score >= 70 else f"Taste (Focus: {round(taste_score/20.0, 1)}★) notes minor feature/aesthetic mismatch"
+        budget_verdict = f"Budget Agent (Focus: {round(budget_score/20.0, 1)}★) confirms excellent pricing fit" if budget_score >= 70 else f"Budget Agent (Focus: {round(budget_score/20.0, 1)}★) warns of significant wallet friction"
+        novelty_verdict = f"Novelty (Focus: {round(novelty_score/20.0, 1)}★) welcomes the cross-domain discovery" if novelty_score >= 70 else f"Novelty (Focus: {round(novelty_score/20.0, 1)}★) notes it stays close to your usual categories"
+        cultural_verdict = f"Cultural Agent (Focus: {round(naija_score/20.0, 1)}★) validates strong local adaptability (NEPA/logistics)" if naija_score >= 70 else f"Cultural Agent (Focus: {round(naija_score/20.0, 1)}★) notes moderate local utility fit"
+        
+        judge_synthesis = (
+            f"After synthesizing the debate: {taste_verdict}; {budget_verdict}; {novelty_verdict}; and {cultural_verdict}. "
+            f"Blending our mathematical ML Prior baseline of {predicted_rating}/5.0★ with the debate consensus rating of {round(debate_rating, 2)}/5.0★ (using debate alpha of {debate_alpha}), "
+            f"I award a final predicted delight score of {final_judge_score}/5.0★."
+        )
+
         judge_text = (
-            f"Final Decision: Checking the mathematically trained ML prior predicted rating of {predicted_rating}/5.0 as a baseline, "
-            f"and weighing the agents' arguments on budget, local Lagos context, and battery/delivery sensitivities: "
-            f"{judge_modulated} I award this item a final predicted delight of {final_judge_score}/5.0. {post_consumption_arg}"
+            f"⚖️ Final Verdict: My decision is anchored on our mathematically trained ML prior predicted rating of {predicted_rating}/5.0 as a baseline. "
+            f"Weighing all agents' arguments, {judge_synthesis} {post_consumption_arg}"
         )
 
         debate_script = [
