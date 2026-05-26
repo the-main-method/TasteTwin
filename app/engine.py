@@ -324,11 +324,11 @@ def compute_user_embedding(persona):
     v8 = [
         round(1.0 - (dna["budget"] / 100.0), 3),      # Dim 0: Price utility
         round(dna["novelty"] / 100.0, 3),            # Dim 1: Exploration
-        round(dna["sarcasm"] / 100.0, 3),            # Dim 2: Sarcasm tendency
-        round(aff.get("electronics", 0.5), 3),        # Dim 3: Electronics affinity
-        round(aff.get("food", 0.5), 3),               # Dim 4: Food affinity
-        round(aff.get("books", 0.5), 3),              # Dim 5: Books affinity
-        round(aff.get("drinks", 0.5), 3),             # Dim 6: Drinks affinity
+        round(aff.get("electronics", 0.5), 3),        # Dim 2: Electronics affinity
+        round(aff.get("food", 0.5), 3),               # Dim 3: Food affinity
+        round(aff.get("books", 0.5), 3),              # Dim 4: Books affinity
+        round(aff.get("drinks", 0.5), 3),             # Dim 5: Drinks affinity
+        round(aff.get("fashion", 0.5), 3),            # Dim 6: Fashion affinity
         round(dna["naija_scale"] / 100.0, 3)          # Dim 7: Cultural scale
     ]
     

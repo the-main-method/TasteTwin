@@ -26,23 +26,13 @@ def stream_and_parse_amazon(category="Appliances", limit=1000):
     print(f"[TasteTwin Ingestion] Streaming reviews from HF McAuley-Lab/Amazon-Reviews-2023 ({config_reviews})...")
     
     # 1. Stream reviews
-    try:
-        reviews_stream = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023", 
-            config_reviews, 
-            split="train", 
-            streaming=True, 
-            trust_remote_code=True
-        )
-    except Exception as e:
-        print(f"[TasteTwin] Split 'train' failed: {e}. Trying split 'full'...")
-        reviews_stream = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023", 
-            config_reviews, 
-            split="full", 
-            streaming=True, 
-            trust_remote_code=True
-        )
+    reviews_stream = load_dataset(
+        "McAuley-Lab/Amazon-Reviews-2023", 
+        config_reviews, 
+        split="full", 
+        streaming=True, 
+        trust_remote_code=True
+    )
 
     raw_reviews = []
     count = 0
@@ -75,39 +65,24 @@ def stream_and_parse_amazon(category="Appliances", limit=1000):
     print(f"[TasteTwin Ingestion] Streamed {len(raw_reviews)} raw reviews. Extracting metadata for {len(needed_asins)} unique products...")
     
     # 2. Stream metadata matching needed ASINs
-    try:
-        meta_stream = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023", 
-            config_meta, 
-            split="train", 
-            streaming=True, 
-            trust_remote_code=True
-        )
-    except Exception as e:
-        print(f"[TasteTwin] Split 'train' failed for metadata: {e}. Trying split 'full'...")
-        meta_stream = load_dataset(
-            "McAuley-Lab/Amazon-Reviews-2023", 
-            config_meta, 
-            split="full", 
-            streaming=True, 
-            trust_remote_code=True
-        )
+    meta_stream = load_dataset(
+        "McAuley-Lab/Amazon-Reviews-2023", 
+        config_meta, 
+        split="full", 
+        streaming=True, 
+        trust_remote_code=True
+    )
         
     meta_map = {}
     meta_count = 0
     scanned_count = 0
-    last_find_scanned = 0
     
     for row in meta_stream:
         scanned_count += 1
         
         # Avoid hanging if some ASINs are missing from metadata
-        if scanned_count > 30000:
-            print(f"[TasteTwin Ingestion] Scanned 30,000 metadata rows. Stopping early to prevent hanging.")
-            break
-            
-        if scanned_count - last_find_scanned > 5000:
-            print(f"[TasteTwin Ingestion] Found no new matches in last 5,000 rows (scanned {scanned_count} total). Stopping early.")
+        if scanned_count > 50000:
+            print(f"[TasteTwin Ingestion] Scanned 50,000 metadata rows. Stopping early to prevent hanging.")
             break
             
         asin = row.get("parent_asin") or row.get("asin")
@@ -120,8 +95,6 @@ def stream_and_parse_amazon(category="Appliances", limit=1000):
             
         if asin in meta_map:
             continue
-            
-        last_find_scanned = scanned_count
             
         title = row.get("title") or f"Amazon Product {asin}"
         desc_val = row.get("description") or row.get("description_text") or ""
