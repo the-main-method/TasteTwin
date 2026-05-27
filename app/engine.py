@@ -2124,6 +2124,7 @@ class TasteTwinEngine:
                 {candidates_for_llm}
                 
                 GUIDELINES:
+                - You MUST generate the debate and recommendation analysis for ALL 10 candidate products listed in the 'CANDIDATE PRODUCTS' list above. Do NOT truncate or return only one item.
                 - Generate a highly-detailed agent debate discussing price tolerance, cultural triggers, battery and delivery sensitivities.
                 - The Judge Agent must inspect the 'ml_predicted_rating' for each product, which was mathematically computed using coordinate descent weight-optimization on the user's historical reviews. Weigh this mathematical prior alongside behavioral debate arguments when rendering the final rating!
                 - The Judge Agent MUST explicitly cite the 'ml_predicted_rating' as baseline in the debate script response.
@@ -2161,9 +2162,45 @@ class TasteTwinEngine:
                 json_match = re.search(r'\[\s*\{.*\}\s*\]', response_text, re.DOTALL)
                 if json_match:
                     results = json.loads(json_match.group(0))
-                    results.sort(key=lambda x: x.get("predicted_rating", 0.0), reverse=True)
+                    
+                    # Merge price, currency, and category from the real catalog items!
+                    valid_recs = []
+                    for r in results:
+                        item_id = r.get("item_id")
+                        # Find matching item in ITEMS
+                        real_item = None
+                        for it in ITEMS:
+                            if it["id"] == item_id:
+                                real_item = it
+                                break
+                        if real_item:
+                            r["price"] = real_item["price"]
+                            r["currency"] = real_item["currency"]
+                            r["category"] = real_item["category"]
+                            valid_recs.append(r)
+                        else:
+                            # Fallback matching by title
+                            title = r.get("title", "")
+                            for it in ITEMS:
+                                if title and (it["title"].lower() in title.lower() or title.lower() in it["title"].lower()):
+                                    real_item = it
+                                    break
+                            if real_item:
+                                r["item_id"] = real_item["id"]
+                                r["price"] = real_item["price"]
+                                r["currency"] = real_item["currency"]
+                                r["category"] = real_item["category"]
+                                valid_recs.append(r)
+                            else:
+                                # Default values so UI doesn't crash or show N/A
+                                r["price"] = r.get("price") or 15000.0
+                                r["currency"] = r.get("currency") or "NGN"
+                                r["category"] = r.get("category") or "electronics"
+                                valid_recs.append(r)
+                                
+                    valid_recs.sort(key=lambda x: x.get("predicted_rating", 0.0), reverse=True)
                     return {
-                        "recommendations": results,
+                        "recommendations": valid_recs if valid_recs else results,
                         "mode": f"LLM Agent ({self.provider.upper()})"
                     }
                 else:

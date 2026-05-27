@@ -113,6 +113,17 @@ function populateSelectors() {
         opt.textContent = `${item.title} (${item.category.toUpperCase()})`;
         iSelect.appendChild(opt);
     });
+
+    const tbiSelect = document.getElementById("taskb-item-select");
+    if (tbiSelect) {
+        tbiSelect.innerHTML = "";
+        allItems.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.id;
+            opt.textContent = `${item.title} (${item.category.toUpperCase()})`;
+            tbiSelect.appendChild(opt);
+        });
+    }
 }
 
 function syncPersonaSelectionSimulator() {
@@ -657,6 +668,120 @@ function filterRecommendations(category) {
     } else {
         const filtered = currentRecommendations.filter(x => x.category === category);
         renderRecommendations(filtered);
+    }
+}
+
+function syncTaskBItemSelection() {
+    document.getElementById("taskb-custom-title").value = "";
+    document.getElementById("taskb-custom-price").value = "";
+    document.getElementById("taskb-custom-desc").value = "";
+}
+
+async function triggerTaskBProductAudit() {
+    if (!selectedPersona) return;
+
+    const list = document.getElementById("recommendations-list");
+    const arena = document.getElementById("debate-arena");
+    
+    // Clear list selection highlights temporarily
+    const cards = document.querySelectorAll(".rec-item-card");
+    cards.forEach(c => c.classList.remove("active"));
+    
+    arena.innerHTML = `
+        <div class="loading-prompt">
+            <i class="fa-solid fa-comments fa-spin"></i> Ingesting audited product & launching multi-agent debate...
+        </div>
+    `;
+
+    // 1. Gather custom inputs if filled
+    const cTitle = document.getElementById("taskb-custom-title").value.trim();
+    const cPrice = document.getElementById("taskb-custom-price").value.trim();
+    const cDesc = document.getElementById("taskb-custom-desc").value.trim();
+    const cCurrency = document.getElementById("taskb-custom-currency").value;
+    const cCategory = document.getElementById("taskb-custom-category").value;
+
+    let payload = {
+        persona_id: selectedPersona.id,
+        provider: currentProvider,
+        api_key: currentApiKey
+    };
+
+    if (selectedPersona.id) {
+        payload.custom_persona = selectedPersona;
+    }
+
+    let customItem = null;
+    let selectedPreloadedItem = null;
+
+    if (cTitle && cDesc) {
+        // Use custom item
+        customItem = {
+            title: cTitle,
+            price: cPrice ? parseFloat(cPrice) : 15000.0,
+            currency: cCurrency,
+            category: cCategory,
+            description: cDesc,
+            features: ["Custom premium features"],
+            complaints: ["Custom design complaints"],
+            avg_rating: 4.0
+        };
+        payload.custom_item = customItem;
+        payload.item_id = "custom_audit_" + Math.random().toString(36).substr(2, 6);
+    } else {
+        // Use preloaded item
+        const pSelect = document.getElementById("taskb-item-select");
+        if (!pSelect || !pSelect.value) {
+            arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: Select a product or fill custom fields.</div>`;
+            return;
+        }
+        selectedPreloadedItem = allItems.find(x => x.id === pSelect.value);
+        if (!selectedPreloadedItem) return;
+        payload.item_id = selectedPreloadedItem.id;
+    }
+
+    try {
+        const res = await fetch("/api/simulate-review", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        
+        if (res.status !== 200) {
+            throw new Error(data.detail || "API Failure");
+        }
+
+        // Build a mock recommendation object for Task B re-ranking
+        const mockRec = {
+            item_id: payload.item_id,
+            title: customItem ? customItem.title : selectedPreloadedItem.title,
+            category: customItem ? customItem.category : selectedPreloadedItem.category,
+            price: customItem ? customItem.price : selectedPreloadedItem.price,
+            currency: customItem ? customItem.currency : selectedPreloadedItem.currency,
+            predicted_rating: data.rating,
+            why_recommended: data.why_recommended,
+            why_not_recommended: data.why_not_recommended,
+            what_would_have_made_it_fail: data.what_would_have_made_it_fail,
+            simulated_review: data.review,
+            simulated_monologue: data.monologue,
+            debate: data.debate
+        };
+
+        // Add to the top of currentRecommendations if not already present
+        let existingIdx = currentRecommendations.findIndex(x => x.item_id === mockRec.item_id);
+        if (existingIdx !== -1) {
+            currentRecommendations[existingIdx] = mockRec;
+        } else {
+            currentRecommendations.unshift(mockRec);
+        }
+
+        // Render lists & highlight selected debate item
+        renderRecommendations(currentRecommendations);
+        selectDebateItem(mockRec.item_id);
+
+    } catch (err) {
+        arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
     }
 }
 

@@ -318,6 +318,46 @@
                             </button>
                         </div>
                         
+                        <!-- Audit Specific Product in Debate Arena -->
+                        <div style="background:rgba(255, 255, 255, 0.02); padding:1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
+                            <h3 style="margin:0; font-size:0.95rem; color:var(--accent-purple); display:flex; align-items:center; gap:0.4rem;">
+                                <i class="fa-solid fa-comments"></i> Audit Specific Product Debate
+                            </h3>
+                            <p style="font-size:0.75rem; color:var(--text-secondary); margin:0;">
+                                Select a preloaded product or type custom details below to trigger an immediate multi-agent debate on it.
+                            </p>
+                            
+                            <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+                                <select id="taskb-item-select" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem; color:#fff; font-size:0.8rem; outline:none;" onchange="syncTaskBItemSelection()">
+                                    <!-- Options populated dynamically -->
+                                </select>
+                                <button class="action-btn primary" onclick="triggerTaskBProductAudit()" style="padding:6px 12px; font-size:0.75rem; font-weight:bold; background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">
+                                    <i class="fa-solid fa-play"></i> Start Audit
+                                </button>
+                            </div>
+                            
+                            <div style="text-align: center; margin: 0.1rem 0; font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">— OR —</div>
+                            
+                            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                                <input type="text" id="taskb-custom-title" placeholder="Product Title (e.g., Nexus Power Bank)" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                <div style="display:flex; gap:0.4rem;">
+                                    <input type="number" id="taskb-custom-price" placeholder="Price" style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                    <select id="taskb-custom-currency" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                        <option value="NGN">NGN</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                    <select id="taskb-custom-category" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                        <option value="electronics">Electronics</option>
+                                        <option value="food">Food</option>
+                                        <option value="books">Books</option>
+                                        <option value="drinks">Drinks</option>
+                                        <option value="fashion">Fashion</option>
+                                    </select>
+                                </div>
+                                <textarea id="taskb-custom-desc" placeholder="Product Description & specs (e.g., 20,000mAh fast charger. Perfect for travel)..." rows="2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none; resize:vertical; font-family:inherit;"></textarea>
+                            </div>
+                        </div>
+                        
                         <div class="category-filter-area">
                             <button class="filter-chip active" onclick="filterRecommendations('all')">All Domains</button>
                             <button class="filter-chip" onclick="filterRecommendations('electronics')">Electronics</button>
