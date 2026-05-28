@@ -61,24 +61,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Start Driver.js onboarding tour if not completed
         if (!localStorage.getItem('tasteTwinTourDone')) {
             setTimeout(() => {
-                const driver = window.driver.js.driver;
-                const tourObj = driver({
-                    showProgress: true,
-                    steps: [
-                        { element: '.config-trigger', popover: { title: 'Welcome to TasteTwin!', description: 'Start by clicking here to select an execution mode. You can use the blazing-fast Local Heuristics, or select an LLM like Groq Llama 3 (requires an API key).', side: "bottom", align: 'start' } },
-                        { element: 'button[data-tab="tab-sandbox"]', popover: { title: 'User Sandbox', description: 'This is where you set the active persona and explore the Digital Twin memory. Select different users to load their historical data, preferences, and generated Taste DNA.', side: "right", align: 'start' } },
-                        { element: 'button[data-tab="tab-taste-map"]', popover: { title: 'Taste Map', description: 'Visually explore how the algorithm clusters users and items in a mathematical vector space based on behavioral similarity.', side: "right", align: 'start' } },
-                        { element: 'button[data-tab="tab-chatbot"]', popover: { title: 'Profiler Chatbot', description: 'Interact with our conversational profiling agent! It will ask you questions to discover your preferences and dynamically build your Taste DNA.', side: "right", align: 'start' } },
-                        { element: 'button[data-tab="tab-taska"]', popover: { title: 'Task A: Review Gen', description: 'Generate realistic, culturally-contextualized product reviews based exactly on the user\'s internal Taste DNA and mood.', side: "right", align: 'start' } },
-                        { element: 'button[data-tab="tab-taskb"]', popover: { title: 'Task B: Recommendations', description: 'Watch specialized AI agents debate and recommend the perfect item based on Taste, Budget, Novelty, and Nigerian Context.', side: "right", align: 'start' } },
-                        { element: 'button[data-tab="tab-evaluation"]', popover: { title: 'Mathematical Evaluation', description: 'View the raw performance metrics of our custom Coordinate Descent ranking engine.', side: "right", align: 'start' } }
-                    ],
-                    onDestroyStarted: () => {
-                        localStorage.setItem('tasteTwinTourDone', 'true');
-                        tourObj.destroy();
+                try {
+                    const driverFn = (window.driver && window.driver.js && window.driver.js.driver) || (window.driver && window.driver.driver) || window.driver;
+                    if (typeof driverFn === 'function') {
+                        const tourObj = driverFn({
+                            showProgress: true,
+                            steps: [
+                                { element: '.config-trigger', popover: { title: 'Welcome to TasteTwin!', description: 'Start by clicking here to select an execution mode. You can use the blazing-fast Local Heuristics, or select an LLM like Groq Llama 3 (requires an API key).', side: "bottom", align: 'start' } },
+                                { element: 'button[data-tab="tab-sandbox"]', popover: { title: 'User Sandbox', description: 'This is where you set the active persona and explore the Digital Twin memory. Select different users to load their historical data, preferences, and generated Taste DNA.', side: "right", align: 'start' } },
+                                { element: 'button[data-tab="tab-taste-map"]', popover: { title: 'Taste Map', description: 'Visually explore how the algorithm clusters users and items in a mathematical vector space based on behavioral similarity.', side: "right", align: 'start' } },
+                                { element: 'button[data-tab="tab-chatbot"]', popover: { title: 'Profiler Chatbot', description: 'Interact with our conversational profiling agent! It will ask you questions to discover your preferences and dynamically build your Taste DNA.', side: "right", align: 'start' } },
+                                { element: 'button[data-tab="tab-taska"]', popover: { title: 'Task A: Review Gen', description: 'Generate realistic, culturally-contextized product reviews based exactly on the user\'s internal Taste DNA and mood.', side: "right", align: 'start' } },
+                                { element: 'button[data-tab="tab-taskb"]', popover: { title: 'Task B: Recommendations', description: 'Watch specialized AI agents debate and recommend the perfect item based on Taste, Budget, Novelty, and Nigerian Context.', side: "right", align: 'start' } },
+                                { element: 'button[data-tab="tab-evaluation"]', popover: { title: 'Mathematical Evaluation', description: 'View the raw performance metrics of our custom Coordinate Descent ranking engine.', side: "right", align: 'start' } }
+                            ],
+                            onDestroyStarted: () => {
+                                localStorage.setItem('tasteTwinTourDone', 'true');
+                                tourObj.destroy();
+                            }
+                        });
+                        tourObj.drive();
                     }
-                });
-                tourObj.drive();
+                } catch (e) {
+                    console.warn("Driver.js tour failed to start safely:", e);
+                }
             }, 800); // slight delay so the UI fully renders
         }
         
@@ -1069,36 +1075,40 @@ function switchTab(tabId) {
 }
 
 function startTaskBTour() {
-    if (!window.driver) return;
-    const driver = window.driver.js.driver;
-    const tourObj = driver({
-        showProgress: true,
-        steps: [
-            { 
-                element: '#btn-generate-recs', 
-                popover: { 
-                    title: 'Generate Recommendations', 
-                    description: 'Click this to evaluate the entire product catalog against the user\'s Taste DNA. It generates a list of top items relevant to the user, displaying their projected ratings and personalized reviews.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#btn-start-audit', 
-                popover: { 
-                    title: 'Start Audit', 
-                    description: 'Use this to run an immediate deep-dive debate on ONE specific product. The resulting debate logs will appear in the right-hand tabs.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
+    try {
+        const driverFn = (window.driver && window.driver.js && window.driver.js.driver) || (window.driver && window.driver.driver) || window.driver;
+        if (typeof driverFn !== 'function') return;
+        const tourObj = driverFn({
+            showProgress: true,
+            steps: [
+                { 
+                    element: '#btn-generate-recs', 
+                    popover: { 
+                        title: 'Generate Recommendations', 
+                        description: 'Click this to evaluate the entire product catalog against the user\'s Taste DNA. It generates a list of top items relevant to the user, displaying their projected ratings and personalized reviews.', 
+                        side: "bottom", 
+                        align: 'start' 
+                    } 
+                },
+                { 
+                    element: '#btn-start-audit', 
+                    popover: { 
+                        title: 'Start Audit', 
+                        description: 'Use this to run an immediate deep-dive debate on ONE specific product. The resulting debate logs will appear in the right-hand tabs.', 
+                        side: "bottom", 
+                        align: 'start' 
+                    } 
+                }
+            ],
+            onDestroyStarted: () => {
+                localStorage.setItem('taskBTourDone', 'true');
+                tourObj.destroy();
             }
-        ],
-        onDestroyStarted: () => {
-            localStorage.setItem('taskBTourDone', 'true');
-            tourObj.destroy();
-        }
-    });
-    tourObj.drive();
+        });
+        tourObj.drive();
+    } catch (e) {
+        console.warn("Driver.js task B tour failed to start safely:", e);
+    }
 }
 
 function switchPaperTab(paperTabId) {
