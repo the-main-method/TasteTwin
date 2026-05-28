@@ -575,6 +575,29 @@ def extract_aspect_argument(persona, item, aspect, query, memory_pool=None):
         text = pattern.sub(item["title"], text)
     text = re.sub(r'\s+', ' ', text).strip()
     
+    # Beautifully synthesize natural fallbacks when RAG matches raw metadata context strings
+    text_lower = text.lower()
+    if "target product features:" in text_lower or "category affinities:" in text_lower or "historical aspect sentiments:" in text_lower or "no specific historical traces for taste" in text_lower:
+        features_list = ", ".join(item.get("features", []))
+        text = f"Looking closely at the specifications for {item['title']}, the build features are quite compelling: {features_list}. For a user with {persona['name']}'s distinct taste DNA, this matches extremely well omo!"
+    elif "target product price:" in text_lower or "budget sensitivity dna:" in text_lower or "historical prices paid:" in text_lower or "average historical price:" in text_lower or "no specific historical traces for budget" in text_lower:
+        text = f"Let's talk about the pricing for {item['title']}. It is listed at {item['price']} {item['currency']}. Considering {persona['name']}'s budget sensitivity DNA of {persona['dna']['budget']}%, this price point requires careful value assessment to ensure complete alignment sha."
+    elif "is this category new to the user" in text_lower or "novelty exploration dna:" in text_lower or "historically purchased categories:" in text_lower or "target product category:" in text_lower or "no specific historical traces for novelty" in text_lower:
+        user_cats = set(r["category"] for r in persona.get("history", []))
+        is_new = item["category"] not in user_cats
+        if is_new:
+            text = f"This category is actually completely new to {persona['name']}! Since their novelty exploration DNA is set to {persona['dna']['novelty']}%, this is an exciting opportunity to try something completely fresh, abeg!"
+        else:
+            text = f"This category is familiar to {persona['name']}. But even within a familiar domain, the unique qualities of {item['title']} should offer a nice, satisfying twist to their routine."
+    elif "persona recent mood state:" in text_lower or "strictness dna:" in text_lower or "historical rating variance:" in text_lower or "exclamations across" in text_lower or "no specific historical traces for mood" in text_lower:
+        mood = persona.get("recent_mood", "standard")
+        text = f"Looking at {persona['name']}'s current mood, they are feeling {mood}. With a strictness level of {persona['dna']['strictness']}%, their expectations will be quite high omo, so there is no room for subpar performance."
+    elif "nigerian behavioral cues to prioritize:" in text_lower or "nigerian affinity scale dna:" in text_lower or "no specific historical traces for cultural" in text_lower:
+        text = f"For the Nigerian context, durability is key. We are looking at durability under NEPA grid fluctuations, resale value, and Lagos traffic/heavy rain delivery logistics. {item['title']} needs to show it can survive the local elements sha."
+    elif "target product complaints:" in text_lower or "no specific historical traces for post_consumption" in text_lower:
+        complaints_list = ", ".join(item.get("complaints", [])) if item.get("complaints") else "no major complaints reported"
+        text = f"I noticed some minor complaints about {item['title']}: {complaints_list}. While these shouldn't be dealbreakers, they are worth keeping in mind for the overall user experience."
+        
     return text
 
 
@@ -828,6 +851,93 @@ def _calibrate_agent_score(raw_score_0_100, item_avg_rating=4.0):
     # Apply as a bounded offset around item's avg rating
     calibrated = item_avg_rating + deviation * 2.0
     return max(1.0, min(5.0, round(calibrated, 2)))
+
+
+def inject_mathematical_agent_scores(persona, item, debate_script, final_rating=None):
+    """
+    Dynamically overrides/injects actual mathematically optimized DNA focus scores
+    into each debate agent's turn to prevent flat 0.0 scores in LLM outputs.
+    """
+    if not debate_script:
+        return debate_script
+        
+    item_avg = item.get("avg_rating", 4.0) if item else 4.0
+    
+    # 1. Taste Score
+    taste_score = item_avg * 20.0
+    if item and item["category"] == persona["domain"]:
+        taste_score += 10.0
+    cal_taste = _calibrate_agent_score(taste_score, item_avg)
+    
+    # 2. Budget Score
+    price_ngn = 15000.0
+    if item:
+        price_ngn = item["price"] if item["currency"] == "NGN" else item["price"] * 1500.0
+    budget_sensitivity = persona["dna"]["budget"]
+    if price_ngn > 100000:
+        budget_score = max(10.0, 100.0 - (budget_sensitivity * 0.9))
+    elif price_ngn > 30000:
+        budget_score = max(30.0, 100.0 - (budget_sensitivity * 0.5))
+    else:
+        budget_score = min(100.0, 50.0 + (budget_sensitivity * 0.5))
+    cal_budget = _calibrate_agent_score(budget_score, item_avg)
+    
+    # 3. Novelty Score
+    user_cats = set(rec["category"] for rec in persona.get("history", []))
+    novelty_sensitivity = persona["dna"]["novelty"]
+    if item and item["category"] not in user_cats:
+        novelty_score = novelty_sensitivity
+    else:
+        novelty_score = 100.0 - (novelty_sensitivity * 0.5)
+    cal_novelty = _calibrate_agent_score(novelty_score, item_avg)
+    
+    # 4. Mood Score
+    mood = persona.get("recent_mood", "standard")
+    mood_score = 70.0
+    if mood == "frustrated":
+        mood_score = 40.0
+    elif mood == "happy":
+        mood_score = 90.0
+    cal_mood = _calibrate_agent_score(mood_score, item_avg)
+    
+    # 5. Cultural Score
+    naija_scale = persona["dna"]["naija_scale"]
+    naija_score = 70.0
+    if item:
+        has_delivery_issue = any("delivery" in c.lower() or "wait" in c.lower() or "delay" in c.lower() for c in item.get("complaints", []))
+        has_power_issue = any("charge" in c.lower() or "nepa" in c.lower() or "battery" in c.lower() or "power" in c.lower() for c in item.get("complaints", []))
+        has_repair_issue = any("broken" in c.lower() or "fragile" in c.lower() or "break" in c.lower() for c in item.get("complaints", []))
+        
+        if naija_scale > 60:
+            if has_delivery_issue:
+                naija_score -= 25.0
+            if has_power_issue:
+                naija_score -= 20.0
+            if has_repair_issue:
+                naija_score -= 15.0
+    cal_cultural = _calibrate_agent_score(naija_score, item_avg)
+    
+    for step in debate_script:
+        if not isinstance(step, dict):
+            continue
+        agent_name = step.get("agent", "")
+        if "Taste" in agent_name:
+            step["score"] = cal_taste
+        elif "Budget" in agent_name:
+            step["score"] = cal_budget
+        elif "Novelty" in agent_name:
+            step["score"] = cal_novelty
+        elif "Mood" in agent_name:
+            step["score"] = cal_mood
+        elif "Cultural" in agent_name:
+            step["score"] = cal_cultural
+        elif "Judge" in agent_name:
+            if final_rating is not None:
+                step["score"] = final_rating
+            elif step.get("score") == 0.0 or not step.get("score"):
+                step["score"] = item_avg
+                
+    return debate_script
 
 # ----------------------------------------------------------------------
 # 5. LOSS & WEIGHTS PARAMETER TRAINING (COORDINATE DESCENT)
@@ -2017,6 +2127,7 @@ class TasteTwinEngine:
                 parsed_debate = []
                 if debate_match:
                     parsed_debate = parse_debate_transcript(debate_match.group(1))
+                    parsed_debate = inject_mathematical_agent_scores(persona, item, parsed_debate, final_rating=rating)
                 
                 return {
                     "rating": rating,
@@ -2177,6 +2288,8 @@ class TasteTwinEngine:
                             r["price"] = real_item["price"]
                             r["currency"] = real_item["currency"]
                             r["category"] = real_item["category"]
+                            if "debate" in r and isinstance(r["debate"], list):
+                                r["debate"] = inject_mathematical_agent_scores(persona, real_item, r["debate"], final_rating=r.get("predicted_rating"))
                             valid_recs.append(r)
                         else:
                             # Fallback matching by title
@@ -2190,12 +2303,23 @@ class TasteTwinEngine:
                                 r["price"] = real_item["price"]
                                 r["currency"] = real_item["currency"]
                                 r["category"] = real_item["category"]
+                                if "debate" in r and isinstance(r["debate"], list):
+                                    r["debate"] = inject_mathematical_agent_scores(persona, real_item, r["debate"], final_rating=r.get("predicted_rating"))
                                 valid_recs.append(r)
                             else:
                                 # Default values so UI doesn't crash or show N/A
                                 r["price"] = r.get("price") or 15000.0
                                 r["currency"] = r.get("currency") or "NGN"
                                 r["category"] = r.get("category") or "electronics"
+                                dummy_item = {
+                                    "id": r.get("item_id", "dummy"),
+                                    "title": r.get("title", "Product"),
+                                    "category": r["category"],
+                                    "price": r["price"],
+                                    "currency": r["currency"]
+                                }
+                                if "debate" in r and isinstance(r["debate"], list):
+                                    r["debate"] = inject_mathematical_agent_scores(persona, dummy_item, r["debate"], final_rating=r.get("predicted_rating"))
                                 valid_recs.append(r)
                                 
                     valid_recs.sort(key=lambda x: x.get("predicted_rating", 0.0), reverse=True)

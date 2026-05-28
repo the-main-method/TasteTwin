@@ -553,12 +553,13 @@ function playSimulationResult(monologue, review, rating) {
     });
 }
 
-function typeWriter(element, text, speed = 20, callback = null) {
+function typeWriter(element, text, speed = 20, callback = null, playIdToCheck = null) {
     let index = 0;
     // Fast typing: do word by word or chunk by chunk if long text to avoid user frustration
     let words = text.split(" ");
     
     function type() {
+        if (playIdToCheck !== null && playIdToCheck !== currentDebatePlayId) return;
         if (index < words.length) {
             element.textContent += (index === 0 ? "" : " ") + words[index];
             index++;
@@ -848,13 +849,17 @@ function selectDebateItem(itemId) {
     }
 }
 
+let currentDebatePlayId = 0;
+
 function playAgentDebateSequence(debate) {
     const arena = document.getElementById("debate-arena");
     arena.innerHTML = "";
     
+    const playId = ++currentDebatePlayId;
     let index = 0;
     
     function playNextBubble() {
+        if (playId !== currentDebatePlayId) return;
         if (index < debate.length) {
             const step = debate[index];
             const bubble = document.createElement("div");
@@ -877,9 +882,14 @@ function playAgentDebateSequence(debate) {
             // Type message
             const msgContainer = document.getElementById(`debate-msg-${index}`);
             typeWriter(msgContainer, step.text, 15, () => {
+                if (playId !== currentDebatePlayId) return;
                 index++;
-                setTimeout(playNextBubble, 600); // delay before next agent enters
-            });
+                setTimeout(() => {
+                    if (playId === currentDebatePlayId) {
+                        playNextBubble();
+                    }
+                }, 600); // delay before next agent enters
+            }, playId);
         }
     }
     
