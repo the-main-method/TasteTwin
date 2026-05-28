@@ -1096,7 +1096,11 @@ def serve_index():
     """Serves the single page application frontend."""
     index_path = os.path.join("app", "static", "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        response = FileResponse(index_path)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     return JSONResponse(
         status_code=404,
         content={"error": "Frontend files not found. Please verify the app/static path."}
