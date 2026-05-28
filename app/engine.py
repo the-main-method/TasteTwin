@@ -2236,7 +2236,7 @@ class TasteTwinEngine:
                 
                 GUIDELINES:
                 - You MUST generate the debate and recommendation analysis for ALL 10 candidate products listed in the 'CANDIDATE PRODUCTS' list above. Do NOT truncate or return only one item.
-                - Generate a highly-detailed agent debate discussing price tolerance, cultural triggers, battery and delivery sensitivities.
+                - For the 'debate' array of each product, generate a highly-detailed agent debate discussing price tolerance, cultural triggers, battery and delivery sensitivities. The debate MUST include EXACTLY 6 turns in total—one single turn for each of the 6 agents (Taste Agent, Budget Agent, Novelty Agent, Mood Agent, Cultural Agent, and Judge Agent) in that exact order. Under no circumstances should any agent speak more than once or repeat the cycle.
                 - The Judge Agent must inspect the 'ml_predicted_rating' for each product, which was mathematically computed using coordinate descent weight-optimization on the user's historical reviews. Weigh this mathematical prior alongside behavioral debate arguments when rendering the final rating!
                 - The Judge Agent MUST explicitly cite the 'ml_predicted_rating' as baseline in the debate script response.
                 - Generate a simulated post-purchase review ('simulated_review') representing what this user would write after buying this product, mirroring their exact speech and tone.

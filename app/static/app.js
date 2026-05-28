@@ -664,11 +664,36 @@ function filterRecommendations(category) {
     chips.forEach(c => c.classList.remove("active"));
     event.target.classList.add("active");
 
+    let filtered = [];
     if (category === "all") {
-        renderRecommendations(currentRecommendations);
+        filtered = currentRecommendations;
     } else {
-        const filtered = currentRecommendations.filter(x => x.category === category);
-        renderRecommendations(filtered);
+        filtered = currentRecommendations.filter(x => x.category === category);
+    }
+    
+    renderRecommendations(filtered);
+    
+    // Auto-select the first item in the newly filtered list to keep details panels fully in sync!
+    if (filtered.length > 0) {
+        selectDebateItem(filtered[0].item_id);
+    } else {
+        // Reset panels if category domain has no matching products
+        activeDebateItem = null;
+        document.getElementById("debate-panel-subtitle").innerHTML = "Select an item to play the debate logs.";
+        document.getElementById("debate-arena").innerHTML = `
+            <div class="debate-placeholder">
+                <i class="fa-solid fa-gavel"></i>
+                <p>No products in this category. Choose another domain.</p>
+            </div>
+        `;
+        const starsEl = document.getElementById("rec-rating-stars");
+        if (starsEl) starsEl.innerHTML = "";
+        const revTextEl = document.getElementById("rec-simulated-review-text");
+        if (revTextEl) revTextEl.textContent = "No product selected.";
+        const monoTextEl = document.getElementById("rec-monologue-text");
+        if (monoTextEl) monoTextEl.textContent = "No product selected.";
+        const failTextEl = document.getElementById("rec-counterfactual-text");
+        if (failTextEl) failTextEl.textContent = "No product selected.";
     }
 }
 
@@ -972,13 +997,7 @@ function switchTab(tabId) {
             c.classList.remove("active");
         }
     });
-    
-    // Play debate sequence again if switching to Task B
-    if (tabId === "tab-taskb" && activeDebateItem) {
-        setTimeout(() => {
-            selectDebateItem(activeDebateItem);
-        }, 100);
-    }
+
     
     // Re-draw Taste Map when its tab becomes active, as canvases drawn while hidden have 0 width/height
     if (tabId === "tab-taste-map" && selectedPersona) {
