@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/style.css?v=1.0.3">
+    <link rel="stylesheet" href="/static/style.css?v=1.0.5">
     
     <!-- Driver.js Onboarding Tour -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
@@ -313,9 +313,14 @@
                             <div style="font-size:0.85rem; color:var(--text-secondary);">
                                 <i class="fa-solid fa-user-tag" style="color:var(--accent-purple);"></i> Active Persona: <strong id="taskb-active-persona-name" style="color:white;">None Selected</strong>
                             </div>
-                            <button class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
-                            </button>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <button class="action-btn secondary" onclick="startTaskBTour()" style="padding:6px 12px; font-size:0.8rem;" title="What do these buttons do?">
+                                    <i class="fa-solid fa-circle-question"></i> Help
+                                </button>
+                                <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Audit Specific Product in Debate Arena -->
@@ -331,7 +336,7 @@
                                 <select id="taskb-item-select" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem; color:#fff; font-size:0.8rem; outline:none;" onchange="syncTaskBItemSelection()">
                                     <!-- Options populated dynamically -->
                                 </select>
-                                <button class="action-btn primary" onclick="triggerTaskBProductAudit()" style="padding:6px 12px; font-size:0.75rem; font-weight:bold; background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">
+                                <button id="btn-start-audit" class="action-btn primary" onclick="triggerTaskBProductAudit()" style="padding:6px 12px; font-size:0.75rem; font-weight:bold; background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">
                                     <i class="fa-solid fa-play"></i> Start Audit
                                 </button>
                             </div>
@@ -358,6 +363,7 @@
                             </div>
                         </div>
                         
+                        
                         <div class="category-filter-area">
                             <button class="filter-chip active" onclick="filterRecommendations('all')">All Domains</button>
                             <button class="filter-chip" onclick="filterRecommendations('electronics')">Electronics</button>
@@ -368,9 +374,11 @@
                         </div>
                         
                         <div class="recommendations-list" id="recommendations-list">
-                            <!-- Dynamic recommendations populated here -->
-                            <div class="loading-prompt">
-                                <i class="fa-solid fa-network-wired fa-spin"></i> Loading candidates list...
+                            <!-- Placeholder when no recommendations are generated -->
+                            <div class="debate-placeholder" style="text-align:center; padding:3rem 1rem; color:var(--text-muted); border: 2px dashed rgba(255,255,255,0.1); border-radius:12px;">
+                                <i class="fa-solid fa-magnifying-glass" style="font-size:2.5rem; color:var(--accent-purple); margin-bottom:1rem; display:block; opacity:0.6;"></i>
+                                <h3 style="color:white; margin:0 0 0.5rem 0;">Ready to Discover?</h3>
+                                <p style="font-size:0.9rem; margin:0; max-width: 300px; margin: 0 auto;">Select an active persona and click 'Generate Recommendations' to begin the personalized exploration.</p>
                             </div>
                         </div>
                     </div>
@@ -894,6 +902,6 @@
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     
     <!-- Custom Script -->
-    <script src="/static/app.js?v=1.0.3"></script>
+    <script src="/static/app.js?v=1.0.6"></script>
 </body>
 </html>

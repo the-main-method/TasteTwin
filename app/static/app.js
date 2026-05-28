@@ -52,8 +52,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             loadTargetProduct();
         }
         
-        // Load Task B recommendations baseline
-        triggerRecommendationRetrieval();
+        // Task B: Do NOT auto-trigger recommendations on page load.
+        // User must explicitly click 'Generate Recommendations' button.
+        resetRecommendationsListToPlaceholder();
+        resetDebatePanelsToPlaceholder();
+        resetTaskAPanelsToPlaceholder();
         
         // Start Driver.js onboarding tour if not completed
         if (!localStorage.getItem('tasteTwinTourDone')) {
@@ -178,8 +181,7 @@ function saveConfiguration() {
     // Update API editor template to match config
     updateApiEditorTemplate();
     
-    // Reload recommendations with new settings
-    triggerRecommendationRetrieval();
+    // Note: Don't auto-re-fetch recs on config save - user triggers manually
 }
 
 function updateModeBadge() {
@@ -220,8 +222,10 @@ function loadSelectedPersona() {
         syncTasteMap();
         initChatbotDNA();
         
-        // Reset recommendations
-        triggerRecommendationRetrieval();
+        // Note: Don't auto-re-fetch recs on persona change - user triggers manually
+        resetRecommendationsListToPlaceholder();
+        resetDebatePanelsToPlaceholder();
+        resetTaskAPanelsToPlaceholder();
     }
 }
 
@@ -287,8 +291,7 @@ function updateDNAValue(trait) {
     updateSliderLabelDisplays(selectedPersona.dna);
     renderTasteDNA(selectedPersona.dna);
     
-    // Reset recommendations on sandbox adjustments
-    triggerRecommendationRetrieval();
+    // Note: Don't auto-re-fetch recs on slider change - user triggers manually via 'Generate Recommendations'
 }
 
 function renderTasteDNA(dna) {
@@ -575,7 +578,10 @@ function typeWriter(element, text, speed = 20, callback = null, playIdToCheck = 
 // 5. TASK B: MULTI-AGENT RECOMMENDER & DEBATES
 // ----------------------------------------------------------------------
 async function triggerRecommendationRetrieval() {
-    if (!selectedPersona) return;
+    if (!selectedPersona) {
+        alert("Please select a grounding persona from the User Sandbox first!");
+        return;
+    }
     
     const list = document.getElementById("recommendations-list");
     list.innerHTML = `
@@ -613,10 +619,9 @@ async function triggerRecommendationRetrieval() {
         // Render lists
         renderRecommendations(currentRecommendations);
         
-        // Auto-select first recommendation to play debate
-        if (currentRecommendations.length > 0) {
-            selectDebateItem(currentRecommendations[0].item_id);
-        }
+        // Reset panels to placeholder - user must explicitly click a product to show debate
+        activeDebateItem = null;
+        resetDebatePanelsToPlaceholder();
 
     } catch (err) {
         list.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
@@ -673,27 +678,71 @@ function filterRecommendations(category) {
     
     renderRecommendations(filtered);
     
-    // Auto-select the first item in the newly filtered list to keep details panels fully in sync!
-    if (filtered.length > 0) {
-        selectDebateItem(filtered[0].item_id);
-    } else {
-        // Reset panels if category domain has no matching products
-        activeDebateItem = null;
-        document.getElementById("debate-panel-subtitle").innerHTML = "Select an item to play the debate logs.";
-        document.getElementById("debate-arena").innerHTML = `
+    // Reset panels to placeholder on filtering - user must explicitly click a product to show debate
+    activeDebateItem = null;
+    resetDebatePanelsToPlaceholder();
+}
+
+function resetDebatePanelsToPlaceholder() {
+    document.getElementById("debate-panel-subtitle").innerHTML = "Select an item on the left to see the specialist agents debate their cases and re-score the items.";
+    const tabsEl = document.getElementById("rec-details-tabs");
+    if (tabsEl) tabsEl.style.display = "none";
+    
+    const debatePanel = document.getElementById("debate-arena");
+    const reviewPanel = document.getElementById("rec-future-review-panel");
+    const monologuePanel = document.getElementById("rec-monologue-panel");
+    const counterfactualsPanel = document.getElementById("rec-counterfactuals-panel");
+    
+    if (debatePanel) {
+        debatePanel.style.display = "block";
+        debatePanel.innerHTML = `
             <div class="debate-placeholder">
                 <i class="fa-solid fa-gavel"></i>
-                <p>No products in this category. Choose another domain.</p>
+                <p>Select an item to play the debate logs.</p>
             </div>
         `;
-        const starsEl = document.getElementById("rec-rating-stars");
-        if (starsEl) starsEl.innerHTML = "";
-        const revTextEl = document.getElementById("rec-simulated-review-text");
-        if (revTextEl) revTextEl.textContent = "No product selected.";
-        const monoTextEl = document.getElementById("rec-monologue-text");
-        if (monoTextEl) monoTextEl.textContent = "No product selected.";
-        const failTextEl = document.getElementById("rec-counterfactual-text");
-        if (failTextEl) failTextEl.textContent = "No product selected.";
+    }
+    if (reviewPanel) reviewPanel.style.display = "none";
+    if (monologuePanel) monologuePanel.style.display = "none";
+    if (counterfactualsPanel) counterfactualsPanel.style.display = "none";
+    
+    // Reset active highlights on cards
+    const cards = document.querySelectorAll(".rec-item-card");
+    cards.forEach(c => c.classList.remove("active"));
+}
+
+function resetRecommendationsListToPlaceholder() {
+    const list = document.getElementById("recommendations-list");
+    if (list) {
+        list.innerHTML = `
+            <div class="debate-placeholder" style="text-align:center; padding:3rem 1rem; color:var(--text-muted); border: 2px dashed rgba(255,255,255,0.1); border-radius:12px;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:2.5rem; color:var(--accent-purple); margin-bottom:1rem; display:block; opacity:0.6;"></i>
+                <h3 style="color:white; margin:0 0 0.5rem 0;">Ready to Discover?</h3>
+                <p style="font-size:0.9rem; margin:0; max-width: 300px; margin: 0 auto;">Select an active persona and click 'Generate Recommendations' to begin the personalized exploration.</p>
+            </div>
+        `;
+    }
+    currentRecommendations = [];
+    activeDebateItem = null;
+}
+
+function resetTaskAPanelsToPlaceholder() {
+    const mOut = document.getElementById("inner-monologue-output");
+    const rOut = document.getElementById("written-review-output");
+    if (mOut) {
+        mOut.innerHTML = '<span class="placeholder-text">Simulated thoughts before reviewing will type out here...</span>';
+    }
+    if (rOut) {
+        rOut.innerHTML = `
+            <div class="rating-display" id="rating-output">
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+                <i class="far fa-star"></i>
+            </div>
+            <p class="placeholder-text">Simulated review text will load here...</p>
+        `;
     }
 }
 
@@ -704,7 +753,10 @@ function syncTaskBItemSelection() {
 }
 
 async function triggerTaskBProductAudit() {
-    if (!selectedPersona) return;
+    if (!selectedPersona) {
+        alert("Please select a grounding persona from the User Sandbox first!");
+        return;
+    }
 
     const list = document.getElementById("recommendations-list");
     const arena = document.getElementById("debate-arena");
@@ -739,14 +791,14 @@ async function triggerTaskBProductAudit() {
     let customItem = null;
     let selectedPreloadedItem = null;
 
-    if (cTitle && cDesc) {
+    if (cTitle || cDesc || cPrice) {
         // Use custom item
         customItem = {
-            title: cTitle,
+            title: cTitle || "Custom Product",
             price: cPrice ? parseFloat(cPrice) : 15000.0,
-            currency: cCurrency,
-            category: cCategory,
-            description: cDesc,
+            currency: cCurrency || "NGN",
+            category: cCategory || "electronics",
+            description: cDesc || "No description provided.",
             features: ["Custom premium features"],
             complaints: ["Custom design complaints"],
             avg_rating: 4.0
@@ -810,6 +862,8 @@ async function triggerTaskBProductAudit() {
         arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
     }
 }
+
+
 
 function selectDebateItem(itemId) {
     activeDebateItem = itemId;
@@ -1005,6 +1059,46 @@ function switchTab(tabId) {
             syncTasteMap();
         }, 50);
     }
+
+    // Optional: auto trigger Task B tour first time they visit
+    if (tabId === "tab-taskb" && !localStorage.getItem("taskBTourDone")) {
+        setTimeout(() => {
+            startTaskBTour();
+        }, 500);
+    }
+}
+
+function startTaskBTour() {
+    if (!window.driver) return;
+    const driver = window.driver.js.driver;
+    const tourObj = driver({
+        showProgress: true,
+        steps: [
+            { 
+                element: '#btn-generate-recs', 
+                popover: { 
+                    title: 'Generate Recommendations', 
+                    description: 'Click this to evaluate the entire product catalog against the user\'s Taste DNA. It generates a list of top items relevant to the user, displaying their projected ratings and personalized reviews.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#btn-start-audit', 
+                popover: { 
+                    title: 'Start Audit', 
+                    description: 'Use this to run an immediate deep-dive debate on ONE specific product. The resulting debate logs will appear in the right-hand tabs.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            }
+        ],
+        onDestroyStarted: () => {
+            localStorage.setItem('taskBTourDone', 'true');
+            tourObj.destroy();
+        }
+    });
+    tourObj.drive();
 }
 
 function switchPaperTab(paperTabId) {
@@ -1477,7 +1571,6 @@ async function parseCustomPersonaDNA() {
         }
         pSelect.value = "custom_sandboxed_twin";
         
-        triggerRecommendationRetrieval();
         textarea.value = originalText;
     } catch (err) {
         alert("Failed to parse custom persona: " + err.message);
@@ -1786,8 +1879,6 @@ async function streamAmazonDataset() {
             selectedItem = allItems[0];
             loadTargetProduct();
         }
-        
-        triggerRecommendationRetrieval();
         
     } catch (err) {
         statusLog.style.color = "var(--accent-rose)";

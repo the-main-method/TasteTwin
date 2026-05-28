@@ -68,6 +68,7 @@ class CustomPersonaModel(BaseModel):
     history: List[Dict[str, Any]]
 
 class CustomItemModel(BaseModel):
+    id: Optional[str] = None
     title: str
     category: str
     price: float
