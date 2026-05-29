@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/style.css?v=2.0.9">
+    <link rel="stylesheet" href="/static/style.css?v=2.1.0">
     
     <!-- Driver.js Onboarding Tour -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
@@ -303,12 +303,8 @@
 
             <!-- SECTION 3: TASK B DEBATE ARENA -->
             <section class="tab-content" id="tab-taskb">
-                <div class="grid-2col">
-                    <!-- Left: Recommendation Results & Audit -->
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 800px; overflow-y: auto; padding-right: 0.5rem;">
-                        
-                        <!-- Card 1: Audit Specific Product -->
-                        <div class="glass-card flex-col" style="flex-shrink: 0; padding: 1.2rem;">
+                <!-- Card 1: Audit Specific Product (Full Width Top) -->
+                <div class="glass-card flex-col" style="margin-bottom: 1.5rem; padding: 1.2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <h2 style="margin: 0;">Audit Specific Product</h2>
                                 <button class="action-btn secondary" onclick="startTaskBTour()" style="padding:6px 12px; font-size:0.8rem;" title="What do these buttons do?">
@@ -355,23 +351,63 @@
                                         <option value="food">Food</option>
                                         <option value="books">Books</option>
                                         <option value="drinks">Drinks</option>
-                                        <option value="fashion">Fashion</option>
-                                    </select>
-                                </div>
-                                <textarea id="taskb-custom-desc" placeholder="Product Description & specs (e.g., 20,000mAh fast charger. Perfect for travel)..." rows="2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none; resize:vertical; font-family:inherit;"></textarea>
-                            </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h2 style="margin: 0;">Audit Specific Product</h2>
+                        <button class="action-btn secondary" onclick="startTaskBTour()" style="padding:6px 12px; font-size:0.8rem;" title="What do these buttons do?">
+                            <i class="fa-solid fa-circle-question"></i> Help
+                        </button>
+                    </div>
+                    <p class="description" style="margin-bottom: 1rem;">Select an item or type custom details to trigger an immediate multi-agent debate.</p>
+                    
+                    <div style="background:rgba(255, 255, 255, 0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:0.85rem; color:var(--text-secondary);">
+                            <i class="fa-solid fa-user-tag" style="color:var(--accent-purple);"></i> Active Persona: <strong id="taskb-active-persona-name" style="color:white;">None Selected</strong>
                         </div>
-                        <!-- End Card 1 -->
+                    </div>
+                    
+                    <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+                        <select id="taskb-item-select" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem; color:#fff; font-size:0.8rem; outline:none;" onchange="syncTaskBItemSelection()">
+                            <!-- Options populated dynamically -->
+                        </select>
+                        <button id="btn-start-audit" class="action-btn primary" onclick="triggerTaskBProductAudit()" style="padding:6px 12px; font-size:0.75rem; font-weight:bold; background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));">
+                            <i class="fa-solid fa-play"></i> Start Audit
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 0.5rem 0; font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">— OR —</div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <input type="text" id="taskb-custom-title" placeholder="Product Title (e.g., Nexus Power Bank)" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                        <div style="display:flex; gap:0.4rem;">
+                            <input type="number" id="taskb-custom-price" placeholder="Price" style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                            <select id="taskb-custom-currency" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                <option value="NGN">NGN</option>
+                                <option value="USD">USD</option>
+                            </select>
+                            <select id="taskb-custom-category" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none;">
+                                <option value="electronics">Electronics</option>
+                                <option value="food">Food</option>
+                                <option value="books">Books</option>
+                                <option value="drinks">Drinks</option>
+                                <option value="fashion">Fashion</option>
+                            </select>
+                        </div>
+                        <textarea id="taskb-custom-desc" placeholder="Product Description & specs (e.g., 20,000mAh fast charger. Perfect for travel)..." rows="2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none; resize:vertical; font-family:inherit;"></textarea>
+                    </div>
+                </div>
 
-                        <!-- Card 2: Personalized Recommendations -->
-                        <div class="glass-card flex-col max-height-column" style="flex-grow: 1; padding: 1.2rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <h2 style="margin: 0;">Personalized Recommendations</h2>
-                                <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
-                                </button>
-                            </div>
-                            <p class="description" style="margin-bottom: 1rem;">We retrieve cross-domain candidate products and orchestrate a Multi-Agent debate to dynamically re-rank items by predicted delight.</p>
+                <!-- Main Debate Layout (2 Columns) -->
+                <div class="grid-2col">
+                    <!-- Left Column: Personalized Recommendations -->
+                    <div class="glass-card flex-col max-height-column" style="flex-grow: 1; padding: 1.2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h2 style="margin: 0;">Personalized Recommendations</h2>
+                            <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
+                            </button>
+                        </div>
+                        <p class="description" style="margin-bottom: 1rem;">We retrieve cross-domain candidate products and orchestrate a Multi-Agent debate to dynamically re-rank items by predicted delight.</p>
+                        
                         <div class="category-tabs" style="display:flex; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:1rem;">
                             <button class="cat-tab active" onclick="filterRecommendations('all', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid var(--accent-purple); color:white; font-weight:bold; cursor:pointer; font-size:0.85rem; transition:0.3s;">All</button>
                             <button class="cat-tab" onclick="filterRecommendations('electronics', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Electronics</button>
@@ -389,11 +425,11 @@
                                 <p style="font-size:0.9rem; margin:0; max-width: 300px; margin: 0 auto;">Select an active persona and click 'Generate Recommendations' to begin the personalized exploration.</p>
                             </div>
                         </div>
-                        </div> <!-- End Card 2 -->
-                    </div> <!-- End Left Wrapper -->
+                        </div>
+                    </div> <!-- End Left Column -->
 
-                    <!-- Right: Live Debate logs & Unified Simulated Details -->
-                    <div class="glass-card flex-col" style="position: sticky; top: 1rem; max-height: 85vh; overflow-y: auto;">
+                    <!-- Right Column: Live Debate logs & Unified Simulated Details -->
+                    <div class="glass-card flex-col max-height-column" style="padding: 1.2rem;">
                         <h2>Agentic Recommendation Debate Arena</h2>
                         <p class="description" id="debate-panel-subtitle">Select an item on the left to see the specialist agents debate their cases and re-score the items.</p>
                         
