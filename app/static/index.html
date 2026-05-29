@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/style.css?v=2.1.0">
+    <link rel="stylesheet" href="/static/style.css?v=2.1.1">
     
     <!-- Driver.js Onboarding Tour -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
@@ -303,8 +303,14 @@
 
             <!-- SECTION 3: TASK B DEBATE ARENA -->
             <section class="tab-content" id="tab-taskb">
-                <!-- Card 1: Audit Specific Product (Full Width Top) -->
-                <div class="glass-card flex-col" style="margin-bottom: 1.5rem; padding: 1.2rem;">
+                <!-- Main Debate Layout (2 Columns) -->
+                <div class="grid-2col">
+                    
+                    <!-- Left Column (Wrapper without scrolling) -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        
+                        <!-- Card 1: Audit Specific Product -->
+                        <div class="glass-card flex-col" style="padding: 1.2rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <h2 style="margin: 0;">Audit Specific Product</h2>
                                 <button class="action-btn secondary" onclick="startTaskBTour()" style="padding:6px 12px; font-size:0.8rem;" title="What do these buttons do?">
@@ -393,15 +399,13 @@
                             </select>
                         </div>
                         <textarea id="taskb-custom-desc" placeholder="Product Description & specs (e.g., 20,000mAh fast charger. Perfect for travel)..." rows="2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none; resize:vertical; font-family:inherit;"></textarea>
-                    </div>
-                </div>
+                    </div> <!-- End textarea container -->
+                </div> <!-- End Card 1 -->
 
-                <!-- Main Debate Layout (2 Columns) -->
-                <div class="grid-2col">
-                    <!-- Left Column: Personalized Recommendations -->
-                    <div class="glass-card flex-col max-height-column" style="flex-grow: 1; padding: 1.2rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <h2 style="margin: 0;">Personalized Recommendations</h2>
+                <!-- Card 2: Personalized Recommendations -->
+                <div class="glass-card flex-col" style="padding: 1.2rem; min-height: 400px; flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h2 style="margin: 0;">Personalized Recommendations</h2>
                             <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
                             </button>
@@ -426,12 +430,13 @@
                             </div>
                         </div>
                         </div>
-                    </div> <!-- End Left Column -->
+                    </div> <!-- End Card 2 -->
+                </div> <!-- End Left Column Wrapper -->
 
-                    <!-- Right Column: Live Debate logs & Unified Simulated Details -->
-                    <div class="glass-card flex-col max-height-column" style="padding: 1.2rem;">
-                        <h2>Agentic Recommendation Debate Arena</h2>
-                        <p class="description" id="debate-panel-subtitle">Select an item on the left to see the specialist agents debate their cases and re-score the items.</p>
+                <!-- Right Column: Live Debate logs & Unified Simulated Details -->
+                <div class="glass-card flex-col" style="position: sticky; top: 1rem; max-height: 85vh; overflow-y: auto;">
+                    <h2>Agentic Recommendation Debate Arena</h2>
+                    <p class="description" id="debate-panel-subtitle">Select an item on the left to see the specialist agents debate their cases and re-score the items.</p>
                         
                         <!-- Unified Details tabs -->
                         <div class="debate-tabs" id="rec-details-tabs" style="display:none; gap:5px; margin-bottom:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:3px; border-radius:8px;">
