@@ -622,8 +622,9 @@ async function triggerRecommendationRetrieval() {
 
         currentRecommendations = data.recommendations;
         
-        // Render lists
-        renderRecommendations(currentRecommendations);
+        // Render lists via the filter so it sorts by rating and highlights the active tab
+        const activeTab = document.querySelector(".cat-tab.active") || document.querySelector(".cat-tab");
+        filterRecommendations("all", { target: activeTab });
         
         // Reset panels to placeholder - user must explicitly click a product to show debate
         activeDebateItem = null;
@@ -658,17 +659,20 @@ function renderRecommendations(recs) {
             <div class="rec-item-details" style="flex: 1;">
                 <div class="rec-item-title">${rec.title}</div>
                 <div class="rec-item-price">${currencySymbol}${formattedPrice}</div>
-                
-                <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; font-style: italic; margin: 0.6rem 0 0.4rem 0; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--accent-purple); text-align: left; max-width: 95%;">
-                    "${rec.simulated_review || rec.review || "No simulated review text available."}"
-                </p>
-
-                <div class="rec-item-rationales" style="margin-top: 0.4rem;">
-                    <span class="rational-pill rec"><i class="fa-solid fa-circle-check"></i> ${rec.why_recommended}</span>
-                    ${rec.why_not_recommended && rec.why_not_recommended !== "None" ? `
-                        <span class="rational-pill not-rec"><i class="fa-solid fa-circle-xmark"></i> ${rec.why_not_recommended}</span>
-                    ` : ""}
-                </div>
+                <details style="margin-top: 0.5rem; color: var(--accent-cyan); font-size: 0.82rem;">
+                    <summary style="outline: none; font-weight: 500;">View Simulated Review & Rationale</summary>
+                    <div style="margin-top: 0.5rem; color: var(--text-secondary); cursor: default;" onclick="event.stopPropagation()">
+                        <p style="font-size: 0.82rem; line-height: 1.45; font-style: italic; margin: 0 0 0.4rem 0; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--accent-purple); text-align: left; max-width: 95%;">
+                            "${rec.simulated_review || rec.review || "No simulated review text available."}"
+                        </p>
+                        <div class="rec-item-rationales" style="margin-top: 0.4rem;">
+                            <span class="rational-pill rec"><i class="fa-solid fa-circle-check"></i> ${rec.why_recommended}</span>
+                            ${rec.why_not_recommended && rec.why_not_recommended !== "None" ? `
+                                <span class="rational-pill not-rec"><i class="fa-solid fa-circle-xmark"></i> ${rec.why_not_recommended}</span>
+                            ` : ""}
+                        </div>
+                    </div>
+                </details>
             </div>
             <div class="rec-item-score-circle" style="flex-shrink: 0; margin-left: 12px; margin-top: 4px;">${displayRating}</div>
         `;
@@ -676,18 +680,37 @@ function renderRecommendations(recs) {
     });
 }
 
-function filterRecommendations(category) {
-    // Toggle active chip
-    const chips = document.querySelectorAll(".filter-chip");
-    chips.forEach(c => c.classList.remove("active"));
-    event.target.classList.add("active");
+function filterRecommendations(category, event) {
+    // Toggle active tab
+    const tabs = document.querySelectorAll(".cat-tab");
+    if (tabs.length > 0) {
+        tabs.forEach(c => {
+            c.classList.remove("active");
+            c.style.borderBottom = "2px solid transparent";
+            c.style.color = "var(--text-muted)";
+            c.style.fontWeight = "normal";
+        });
+        if (event && event.target) {
+            event.target.classList.add("active");
+            event.target.style.borderBottom = "2px solid var(--accent-purple)";
+            event.target.style.color = "white";
+            event.target.style.fontWeight = "bold";
+        }
+    }
 
     let filtered = [];
     if (category === "all") {
-        filtered = currentRecommendations;
+        filtered = [...currentRecommendations];
     } else {
         filtered = currentRecommendations.filter(x => x.category === category);
     }
+    
+    // Sort by predicted_rating descending
+    filtered.sort((a, b) => {
+        const ratingA = a.predicted_rating !== undefined ? parseFloat(a.predicted_rating) : 0;
+        const ratingB = b.predicted_rating !== undefined ? parseFloat(b.predicted_rating) : 0;
+        return ratingB - ratingA;
+    });
     
     renderRecommendations(filtered);
     
@@ -759,122 +782,7 @@ function resetTaskAPanelsToPlaceholder() {
     }
 }
 
-function syncTaskBItemSelection() {
-    document.getElementById("taskb-custom-title").value = "";
-    document.getElementById("taskb-custom-price").value = "";
-    document.getElementById("taskb-custom-desc").value = "";
-}
 
-async function triggerTaskBProductAudit() {
-    if (!selectedPersona) {
-        alert("Please select a grounding persona from the User Sandbox first!");
-        return;
-    }
-
-    const list = document.getElementById("recommendations-list");
-    const arena = document.getElementById("debate-arena");
-    
-    // Clear list selection highlights temporarily
-    const cards = document.querySelectorAll(".rec-item-card");
-    cards.forEach(c => c.classList.remove("active"));
-    
-    arena.innerHTML = `
-        <div class="loading-prompt">
-            <i class="fa-solid fa-comments fa-spin"></i> Ingesting audited product & launching multi-agent debate...
-        </div>
-    `;
-
-    // 1. Gather custom inputs if filled
-    const cTitle = document.getElementById("taskb-custom-title").value.trim();
-    const cPrice = document.getElementById("taskb-custom-price").value.trim();
-    const cDesc = document.getElementById("taskb-custom-desc").value.trim();
-    const cCurrency = document.getElementById("taskb-custom-currency").value;
-    const cCategory = document.getElementById("taskb-custom-category").value;
-
-    let payload = {
-        persona_id: selectedPersona.id,
-        provider: currentProvider,
-        api_key: currentApiKey
-    };
-
-    if (selectedPersona.id) {
-        payload.custom_persona = selectedPersona;
-    }
-
-    let customItem = null;
-    let selectedPreloadedItem = null;
-
-    if (cTitle || cDesc || cPrice) {
-        // Use custom item
-        customItem = {
-            title: cTitle || "Custom Product",
-            price: cPrice ? parseFloat(cPrice) : 15000.0,
-            currency: cCurrency || "NGN",
-            category: cCategory || "electronics",
-            description: cDesc || "No description provided.",
-            features: ["Custom premium features"],
-            complaints: ["Custom design complaints"],
-            avg_rating: 4.0
-        };
-        payload.custom_item = customItem;
-        payload.item_id = "custom_audit_" + Math.random().toString(36).substr(2, 6);
-    } else {
-        // Use preloaded item
-        const pSelect = document.getElementById("taskb-item-select");
-        if (!pSelect || !pSelect.value) {
-            arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: Select a product or fill custom fields.</div>`;
-            return;
-        }
-        selectedPreloadedItem = allItems.find(x => x.id === pSelect.value);
-        if (!selectedPreloadedItem) return;
-        payload.item_id = selectedPreloadedItem.id;
-    }
-
-    try {
-        const res = await fetch("/api/simulate-review", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-        
-        if (res.status !== 200) {
-            throw new Error(data.detail || "API Failure");
-        }
-
-        // Build a mock recommendation object for Task B re-ranking
-        const mockRec = {
-            item_id: payload.item_id,
-            title: customItem ? customItem.title : selectedPreloadedItem.title,
-            category: customItem ? customItem.category : selectedPreloadedItem.category,
-            price: customItem ? customItem.price : selectedPreloadedItem.price,
-            currency: customItem ? customItem.currency : selectedPreloadedItem.currency,
-            predicted_rating: data.rating,
-            why_recommended: data.why_recommended,
-            why_not_recommended: data.why_not_recommended,
-            what_would_have_made_it_fail: data.what_would_have_made_it_fail,
-            simulated_review: data.review,
-            simulated_monologue: data.monologue,
-            debate: data.debate
-        };
-
-        // Add to the top of currentRecommendations if not already present
-        let existingIdx = currentRecommendations.findIndex(x => x.item_id === mockRec.item_id);
-        if (existingIdx !== -1) {
-            currentRecommendations[existingIdx] = mockRec;
-        } else {
-            currentRecommendations.unshift(mockRec);
-        }
-
-        // Render lists & highlight selected debate item
-        renderRecommendations(currentRecommendations);
-        selectDebateItem(mockRec.item_id);
-
-    } catch (err) {
-        arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
-    }
-}
 
 
 
@@ -1991,3 +1899,124 @@ async function synthesizeColdStartTwin() {
         btn.disabled = false;
     }
 }
+
+function syncTaskBItemSelection() {
+    document.getElementById("taskb-custom-title").value = "";
+    document.getElementById("taskb-custom-price").value = "";
+    document.getElementById("taskb-custom-desc").value = "";
+}
+
+async function triggerTaskBProductAudit() {
+    if (!selectedPersona) {
+        alert("Please select a grounding persona from the User Sandbox first!");
+        return;
+    }
+
+    const list = document.getElementById("recommendations-list");
+    const arena = document.getElementById("debate-arena");
+    
+    // Clear list selection highlights temporarily
+    const cards = document.querySelectorAll(".rec-item-card");
+    cards.forEach(c => c.classList.remove("active"));
+    
+    arena.innerHTML = `
+        <div class="loading-prompt">
+            <i class="fa-solid fa-comments fa-spin"></i> Ingesting audited product & launching multi-agent debate...
+        </div>
+    `;
+
+    // 1. Gather custom inputs if filled
+    const cTitle = document.getElementById("taskb-custom-title").value.trim();
+    const cPrice = document.getElementById("taskb-custom-price").value.trim();
+    const cDesc = document.getElementById("taskb-custom-desc").value.trim();
+    const cCurrency = document.getElementById("taskb-custom-currency").value;
+    const cCategory = document.getElementById("taskb-custom-category").value;
+
+    let payload = {
+        persona_id: selectedPersona.id,
+        provider: currentProvider,
+        api_key: currentApiKey
+    };
+
+    if (selectedPersona.id) {
+        payload.custom_persona = selectedPersona;
+    }
+
+    let customItem = null;
+    let selectedPreloadedItem = null;
+
+    if (cTitle || cDesc || cPrice) {
+        // Use custom item
+        customItem = {
+            title: cTitle || "Custom Product",
+            price: cPrice ? parseFloat(cPrice) : 15000.0,
+            currency: cCurrency || "NGN",
+            category: cCategory || "electronics",
+            description: cDesc || "No description provided.",
+            features: ["Custom premium features"],
+            complaints: ["Custom design complaints"],
+            avg_rating: 4.0
+        };
+        payload.custom_item = customItem;
+        payload.item_id = "custom_audit_" + Math.random().toString(36).substr(2, 6);
+    } else {
+        // Use preloaded item
+        const pSelect = document.getElementById("taskb-item-select");
+        if (!pSelect || !pSelect.value) {
+            arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: Select a product or fill custom fields.</div>`;
+            return;
+        }
+        selectedPreloadedItem = allItems.find(x => x.id === pSelect.value);
+        if (!selectedPreloadedItem) return;
+        payload.item_id = selectedPreloadedItem.id;
+    }
+
+    try {
+        const res = await fetch("/api/simulate-review", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        
+        if (res.status !== 200) {
+            throw new Error(data.detail || "API Failure");
+        }
+
+        // Build a mock recommendation object for Task B re-ranking
+        const mockRec = {
+            item_id: payload.item_id,
+            title: customItem ? customItem.title : selectedPreloadedItem.title,
+            category: customItem ? customItem.category : selectedPreloadedItem.category,
+            price: customItem ? customItem.price : selectedPreloadedItem.price,
+            currency: customItem ? customItem.currency : selectedPreloadedItem.currency,
+            predicted_rating: data.rating,
+            why_recommended: data.why_recommended,
+            why_not_recommended: data.why_not_recommended,
+            what_would_have_made_it_fail: data.what_would_have_made_it_fail,
+            simulated_review: data.review,
+            simulated_monologue: data.monologue,
+            debate: data.debate
+        };
+
+        // Add to the top of currentRecommendations if not already present
+        let existingIdx = currentRecommendations.findIndex(x => x.item_id === mockRec.item_id);
+        if (existingIdx !== -1) {
+            currentRecommendations[existingIdx] = mockRec;
+        } else {
+            currentRecommendations.unshift(mockRec);
+        }
+
+        // Render lists & highlight selected debate item
+        renderRecommendations(currentRecommendations);
+        selectDebateItem(mockRec.item_id);
+
+    } catch (err) {
+        arena.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
+    }
+}
+
+
+
+

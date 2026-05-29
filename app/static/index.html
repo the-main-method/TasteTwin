@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/style.css?v=2.0.5">
+    <link rel="stylesheet" href="/static/style.css?v=2.0.9">
     
     <!-- Driver.js Onboarding Tour -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
@@ -304,25 +304,24 @@
             <!-- SECTION 3: TASK B DEBATE ARENA -->
             <section class="tab-content" id="tab-taskb">
                 <div class="grid-2col">
-                    <!-- Left: Recommendation Results -->
-                    <div class="glass-card flex-col max-height-column">
-                        <h2>Personalized Recommendations</h2>
-                        <p class="description">We retrieve cross-domain candidate products and orchestrate a Multi-Agent debate to dynamically re-rank items by predicted delight. Select an item to audit the debate logs.</p>
+                    <!-- Left: Recommendation Results & Audit -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 800px; overflow-y: auto; padding-right: 0.5rem;">
                         
-                        <div style="background:rgba(255, 255, 255, 0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.1);">
-                            <div style="font-size:0.85rem; color:var(--text-secondary);">
-                                <i class="fa-solid fa-user-tag" style="color:var(--accent-purple);"></i> Active Persona: <strong id="taskb-active-persona-name" style="color:white;">None Selected</strong>
-                            </div>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <!-- Card 1: Audit Specific Product -->
+                        <div class="glass-card flex-col" style="flex-shrink: 0; padding: 1.2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h2 style="margin: 0;">Audit Specific Product</h2>
                                 <button class="action-btn secondary" onclick="startTaskBTour()" style="padding:6px 12px; font-size:0.8rem;" title="What do these buttons do?">
                                     <i class="fa-solid fa-circle-question"></i> Help
                                 </button>
-                                <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
-                                </button>
                             </div>
-                        </div>
-                        
+                            <p class="description" style="margin-bottom: 1rem;">Select an item or type custom details to trigger an immediate multi-agent debate.</p>
+                            
+                            <div style="background:rgba(255, 255, 255, 0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border:1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size:0.85rem; color:var(--text-secondary);">
+                                    <i class="fa-solid fa-user-tag" style="color:var(--accent-purple);"></i> Active Persona: <strong id="taskb-active-persona-name" style="color:white;">None Selected</strong>
+                                </div>
+                            </div>
                         <!-- Audit Specific Product in Debate Arena -->
                         <div style="background:rgba(255, 255, 255, 0.02); padding:1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
                             <h3 style="margin:0; font-size:0.95rem; color:var(--accent-purple); display:flex; align-items:center; gap:0.4rem;">
@@ -362,15 +361,24 @@
                                 <textarea id="taskb-custom-desc" placeholder="Product Description & specs (e.g., 20,000mAh fast charger. Perfect for travel)..." rows="2" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.55rem; color:#fff; font-size:0.8rem; outline:none; resize:vertical; font-family:inherit;"></textarea>
                             </div>
                         </div>
-                        
-                        
-                        <div class="category-filter-area">
-                            <button class="filter-chip active" onclick="filterRecommendations('all')">All Domains</button>
-                            <button class="filter-chip" onclick="filterRecommendations('electronics')">Electronics</button>
-                            <button class="filter-chip" onclick="filterRecommendations('food')">Food</button>
-                            <button class="filter-chip" onclick="filterRecommendations('books')">Books</button>
-                            <button class="filter-chip" onclick="filterRecommendations('drinks')">Drinks</button>
-                            <button class="filter-chip" onclick="filterRecommendations('fashion')">Fashion</button>
+                        <!-- End Card 1 -->
+
+                        <!-- Card 2: Personalized Recommendations -->
+                        <div class="glass-card flex-col max-height-column" style="flex-grow: 1; padding: 1.2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h2 style="margin: 0;">Personalized Recommendations</h2>
+                                <button id="btn-generate-recs" class="action-btn primary" onclick="triggerRecommendationRetrieval()" style="padding:6px 12px; font-size:0.8rem;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations
+                                </button>
+                            </div>
+                            <p class="description" style="margin-bottom: 1rem;">We retrieve cross-domain candidate products and orchestrate a Multi-Agent debate to dynamically re-rank items by predicted delight.</p>
+                        <div class="category-tabs" style="display:flex; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:1rem;">
+                            <button class="cat-tab active" onclick="filterRecommendations('all', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid var(--accent-purple); color:white; font-weight:bold; cursor:pointer; font-size:0.85rem; transition:0.3s;">All</button>
+                            <button class="cat-tab" onclick="filterRecommendations('electronics', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Electronics</button>
+                            <button class="cat-tab" onclick="filterRecommendations('food', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Food</button>
+                            <button class="cat-tab" onclick="filterRecommendations('books', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Books</button>
+                            <button class="cat-tab" onclick="filterRecommendations('drinks', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Drinks</button>
+                            <button class="cat-tab" onclick="filterRecommendations('fashion', event)" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:0.3s;">Fashion</button>
                         </div>
                         
                         <div class="recommendations-list" id="recommendations-list">
@@ -381,10 +389,11 @@
                                 <p style="font-size:0.9rem; margin:0; max-width: 300px; margin: 0 auto;">Select an active persona and click 'Generate Recommendations' to begin the personalized exploration.</p>
                             </div>
                         </div>
-                    </div>
+                        </div> <!-- End Card 2 -->
+                    </div> <!-- End Left Wrapper -->
 
                     <!-- Right: Live Debate logs & Unified Simulated Details -->
-                    <div class="glass-card flex-col max-height-column">
+                    <div class="glass-card flex-col" style="position: sticky; top: 1rem; max-height: 85vh; overflow-y: auto;">
                         <h2>Agentic Recommendation Debate Arena</h2>
                         <p class="description" id="debate-panel-subtitle">Select an item on the left to see the specialist agents debate their cases and re-score the items.</p>
                         
@@ -902,6 +911,6 @@
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     
     <!-- Custom Script -->
-    <script src="/static/app.js?v=2.0.5"></script>
+    <script src="/static/app.js?v=2.0.7"></script>
 </body>
 </html>
