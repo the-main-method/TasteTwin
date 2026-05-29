@@ -625,9 +625,13 @@ async function triggerRecommendationRetrieval() {
         // Render lists
         renderRecommendations(currentRecommendations);
         
-        // Reset panels to placeholder - user must explicitly click a product to show debate
-        activeDebateItem = null;
-        resetDebatePanelsToPlaceholder();
+        // Auto-select the first item to immediately showcase the multi-agent debate sequence!
+        if (currentRecommendations.length > 0) {
+            selectDebateItem(currentRecommendations[0].item_id);
+        } else {
+            activeDebateItem = null;
+            resetDebatePanelsToPlaceholder();
+        }
 
     } catch (err) {
         list.innerHTML = `<div class="loading-prompt" style="color:var(--accent-rose)"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${err.message}</div>`;
@@ -684,9 +688,13 @@ function filterRecommendations(category) {
     
     renderRecommendations(filtered);
     
-    // Reset panels to placeholder on filtering - user must explicitly click a product to show debate
-    activeDebateItem = null;
-    resetDebatePanelsToPlaceholder();
+    // Auto-select the first item in the newly filtered list to keep details panels fully in sync!
+    if (filtered.length > 0) {
+        selectDebateItem(filtered[0].item_id);
+    } else {
+        activeDebateItem = null;
+        resetDebatePanelsToPlaceholder();
+    }
 }
 
 function resetDebatePanelsToPlaceholder() {
