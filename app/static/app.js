@@ -648,22 +648,29 @@ function renderRecommendations(recs) {
         card.className = "rec-item-card" + (activeDebateItem === rec.item_id ? " active" : "");
         card.setAttribute("data-id", rec.item_id);
         card.onclick = () => selectDebateItem(rec.item_id);
+        card.style.alignItems = "flex-start";
 
         let currencySymbol = rec.currency === "NGN" ? "N" : "$";
         let formattedPrice = rec.price != null ? rec.price.toLocaleString() : "N/A";
+        let displayRating = rec.predicted_rating != null ? Number(rec.predicted_rating).toFixed(1) : "4.0";
 
         card.innerHTML = `
-            <div class="rec-item-details">
+            <div class="rec-item-details" style="flex: 1;">
                 <div class="rec-item-title">${rec.title}</div>
                 <div class="rec-item-price">${currencySymbol}${formattedPrice}</div>
-                <div class="rec-item-rationales">
+                
+                <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; font-style: italic; margin: 0.6rem 0 0.4rem 0; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--accent-purple); text-align: left; max-width: 95%;">
+                    "${rec.simulated_review || rec.review || "No simulated review text available."}"
+                </p>
+
+                <div class="rec-item-rationales" style="margin-top: 0.4rem;">
                     <span class="rational-pill rec"><i class="fa-solid fa-circle-check"></i> ${rec.why_recommended}</span>
-                    ${rec.why_not_recommended !== "None" ? `
+                    ${rec.why_not_recommended && rec.why_not_recommended !== "None" ? `
                         <span class="rational-pill not-rec"><i class="fa-solid fa-circle-xmark"></i> ${rec.why_not_recommended}</span>
                     ` : ""}
                 </div>
             </div>
-            <div class="rec-item-score-circle">${rec.predicted_rating}</div>
+            <div class="rec-item-score-circle" style="flex-shrink: 0; margin-left: 12px; margin-top: 4px;">${displayRating}</div>
         `;
         list.appendChild(card);
     });
